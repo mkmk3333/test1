@@ -1,7 +1,6 @@
 #ifndef __USART_H
 #define __USART_H
-#include "stdio.h"	
-#include "stm32f1xx_hal.h"
+#include "stm32f4xx_hal.h"
 
 #define USART_REC_LEN  			200
 #define EN_USART1_RX 			1

@@ -19,6 +19,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stdio.h"
 #include "stm32f4xx_it.h"
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -239,6 +240,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch(GPIO_Pin)
     {
         case GPIO_PIN_8:
+          printf("KEY1 PRESSAED!!!\n");
           i_flash = 5;
 /*          for (i = 0; i < 5; i++)
           {

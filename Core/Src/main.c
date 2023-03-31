@@ -55,6 +55,12 @@ static void MX_USART1_UART_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+/*to redirect printf to uart with semihosting.*/
+
+int _write(int fd, char* ptr, int len) {
+    HAL_UART_Transmit(&huart1, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+    return len;
+}
 
 /* USER CODE END 0 */
 
@@ -65,6 +71,7 @@ static void MX_USART1_UART_Init(void);
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+  int i;
 
   /* USER CODE END 1 */
 
@@ -113,7 +120,9 @@ int main(void)
     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_1, GPIO_PIN_RESET);
     HAL_Delay(500);
 
-/*      printf("abc:%d\n", i++);  */ /* USER CODE END WHILE */
+    printf("Working:%d\n", i++);  
+
+    /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
   }
