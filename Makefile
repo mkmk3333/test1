@@ -83,6 +83,7 @@ SZ = $(PREFIX)size
 endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
+# For windows wsl2. Using openocd for windows. 
 OPENOCD = /mnt/d/xpack-openocd-0.11.0-3/bin/openocd.exe
 
 #######################################
@@ -190,7 +191,6 @@ clean:
 # flash
 #######################################
 flash:
-# For windows wsl2. Using openocd for windows. 
 	$(OPENOCD) -f Targets/$(TARGET)/openocd_jlink_swd.cfg -f Targets/$(TARGET)/stm32f4x.cfg -c "program $(BUILD_DIR)/$(TARGET).elf verify reset exit"
 
 #######################################

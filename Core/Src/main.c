@@ -18,6 +18,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
+#include "stdio.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -71,7 +72,7 @@ int _write(int fd, char* ptr, int len) {
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int i;
+  int i = 0;
 
   /* USER CODE END 1 */
 
@@ -111,13 +112,14 @@ int main(void)
       i_flash --;
     }
 
-    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_SET)   /* sw1, not working? CANNOT GO RESET */
+    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET)   /* sw1 */
       HAL_GPIO_WritePin(GPIOF,GPIO_PIN_0, GPIO_PIN_RESET);
+    else
+      HAL_GPIO_WritePin(GPIOF,GPIO_PIN_0, GPIO_PIN_SET);
+
     if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_SET)  /* sw2 */
-      HAL_GPIO_WritePin(GPIOF,GPIO_PIN_1, GPIO_PIN_SET);
-    HAL_Delay(500);
-    HAL_GPIO_WritePin(GPIOF,GPIO_PIN_0, GPIO_PIN_SET);
-    HAL_GPIO_WritePin(GPIOF,GPIO_PIN_1, GPIO_PIN_RESET);
+      HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_1);
+
     HAL_Delay(500);
 
     printf("Working:%d\n", i++);  
@@ -220,7 +222,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOF_CLK_ENABLE(); 
-   __HAL_RCC_GPIOC_CLK_ENABLE(); 
+  __HAL_RCC_GPIOC_CLK_ENABLE(); 
 
   /*Configure GPIO pins : PF0 PF1 */
   GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7;  /* led1/2/7*/
@@ -228,7 +230,7 @@ static void MX_GPIO_Init(void)
   GPIO_Initure.Pull = GPIO_NOPULL;
   GPIO_Initure.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOF, &GPIO_Initure);
- HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PC0 PC1 */
   GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1;  /* sw1 & 2*/
