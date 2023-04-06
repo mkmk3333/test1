@@ -57,6 +57,7 @@
 
 /* External variables --------------------------------------------------------*/
 extern UART_HandleTypeDef huart1;
+extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
 extern int i_flash;
 /* USER CODE END EV */
@@ -226,6 +227,31 @@ void USART1_IRQHandler(void)
   /* USER CODE END USART1_IRQn 1 */
 }
 
+
+/**
+  * @brief This function handles TIM6 global interrupt, DAC1 and DAC2 underrun error interrupts.
+  */
+void TIM6_DAC_IRQHandler(void)
+{
+  /* USER CODE BEGIN TIM6_DAC_IRQn 0 */
+
+  /* USER CODE END TIM6_DAC_IRQn 0 */
+  HAL_TIM_IRQHandler(&htim6);
+  /* USER CODE BEGIN TIM6_DAC_IRQn 1 */
+
+  /* USER CODE END TIM6_DAC_IRQn 1 */
+}
+
+/**
+  * @brief  Period elapsed callback in non blocking mode
+  * @param  htim : TIM handle
+  * @retval None
+  */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  printf("TIM6 expires: %ld\n", HAL_GetTick());
+}
+
 /* USER CODE BEGIN 1 */
 
 void EXTI9_5_IRQHandler(void)
@@ -240,7 +266,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
     switch(GPIO_Pin)
     {
         case GPIO_PIN_8:
-          printf("KEY1 PRESSAED!!!\n");
+          printf("KEY1 PRESSAED! %ld\n", HAL_GetTick());
           i_flash = 5;
 /*          for (i = 0; i < 5; i++)
           {
