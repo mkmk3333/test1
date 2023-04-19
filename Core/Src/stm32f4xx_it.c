@@ -249,7 +249,8 @@ void TIM6_DAC_IRQHandler(void)
   */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  printf("TIM6 expires: %ld\n", HAL_GetTick());
+  if (htim->Instance == TIM6)
+    printf("TIM6 expires: %ld\n", HAL_GetTick());
 }
 
 /* USER CODE BEGIN 1 */
