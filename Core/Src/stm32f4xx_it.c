@@ -60,6 +60,7 @@ extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
 extern int i_flash;
+extern int flash_flag;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -260,13 +261,18 @@ void EXTI9_5_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
 }
 
+void EXTI15_10_IRQHandler(void)
+{
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 /*    int i;
 */
     switch(GPIO_Pin)
     {
-        case GPIO_PIN_8:
+        case GPIO_PIN_8:{
           printf("KEY1 PRESSAED! %ld\n", HAL_GetTick());
           i_flash = 5;
 /*          for (i = 0; i < 5; i++)
@@ -277,6 +283,11 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
               HAL_Delay(100);
           }
  */         break;
+ 		}
+		case GPIO_PIN_11:{
+			flash_flag=1;
+			break;
+		}
     }
 }
 

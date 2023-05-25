@@ -45,6 +45,7 @@ TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN PV */
 int i_flash;
+int flash_flag=0;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -119,6 +120,13 @@ int main(void)
       HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
       HAL_Delay(100);
       i_flash --;
+    }
+
+    if(flash_flag==1){
+      HAL_GPIO_WritePin(GPIOF,GPIO_PIN_3,GPIO_PIN_SET);
+      HAL_Delay(1000);
+      flash_flag=0;
+      HAL_GPIO_WritePin(GPIOF,GPIO_PIN_3,GPIO_PIN_RESET);
     }
 
     if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET)   /* sw1 */
@@ -273,7 +281,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE(); 
 
   /*Configure GPIO pins : PF0 PF1 */
-  GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7;  /* led1/2/7*/
+  GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_7 | GPIO_PIN_3;  /* led1/2/7/3*/
   GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_Initure.Pull = GPIO_NOPULL;
   GPIO_Initure.Speed = GPIO_SPEED_FREQ_LOW;
@@ -286,8 +294,8 @@ static void MX_GPIO_Init(void)
   GPIO_Initure.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_Initure);
 
-  /*Configure GPIO pin : PC8 */
-  GPIO_Initure.Pin = GPIO_PIN_8;   /* key1_n */
+  /*Configure GPIO pin : PC8  PC11*/
+  GPIO_Initure.Pin = GPIO_PIN_8 | GPIO_PIN_11;   /* key1_n / key2_n */
   GPIO_Initure.Mode = GPIO_MODE_IT_RISING;
   GPIO_Initure.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_Initure);
@@ -295,6 +303,8 @@ static void MX_GPIO_Init(void)
   HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
 
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 4, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
 }
 
 /* USER CODE BEGIN 4 */

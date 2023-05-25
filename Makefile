@@ -84,7 +84,7 @@ endif
 HEX = $(CP) -O ihex
 BIN = $(CP) -O binary -S
 # For windows wsl2. Using openocd for windows. 
-OPENOCD = /mnt/d/xpack-openocd-0.11.0-3/bin/openocd.exe
+OPENOCD = /mnt/d/xpack-openocd-0.12.0-1-win32-x64/xpack-openocd-0.12.0-1/bin/openocd.exe
 
 #######################################
 # CFLAGS
