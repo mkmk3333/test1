@@ -263,6 +263,7 @@ void EXTI9_5_IRQHandler(void)
 
 void EXTI15_10_IRQHandler(void)
 {
+
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
 }
 
@@ -285,7 +286,7 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
  */         break;
  		}
 		case GPIO_PIN_11:{
-			flash_flag=1;
+			flash_flag=(flash_flag+1)%10;
 			break;
 		}
     }
