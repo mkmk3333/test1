@@ -59,7 +59,11 @@
 extern UART_HandleTypeDef huart1;
 extern TIM_HandleTypeDef htim6;
 /* USER CODE BEGIN EV */
-extern int send;
+extern int i_flash;
+extern int Flash_Flag;
+extern int a;
+extern int sum;
+extern int i;
 /* USER CODE END EV */
 
 /******************************************************************************/
@@ -260,15 +264,21 @@ void EXTI9_5_IRQHandler(void)
   HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_8);
 }
 
+void EXTI15_10_IRQHandler(void)
+{
+  HAL_GPIO_EXTI_IRQHandler(GPIO_PIN_11);
+}
+
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
 {
 /*    int i;
 */
     switch(GPIO_Pin)
     {
-        case GPIO_PIN_8:{
+        case GPIO_PIN_8:
+        {
           printf("KEY1 PRESSAED! %ld\n", HAL_GetTick());
-          send=1;
+          i_flash = 5;
 /*          for (i = 0; i < 5; i++)
           {
               HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_SET); 
@@ -277,7 +287,20 @@ void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
               HAL_Delay(100);
           }
  */         break;
- 		}
+        }
+        case GPIO_PIN_11:
+        {
+          a = 0;
+          a = GPIOC->IDR&0x00FF; 
+          if(a == 255)
+            sum+=1;
+          if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_0) == GPIO_PIN_SET && a==255 && sum%1000==0)
+          {
+            printf("break\n");
+            printf("Working:%d: %ld ready: %ld send: %ld ACK: %ld\n sum: %d", i++, HAL_GetTick(), GPIOC->BSRR & 0x100, GPIOC->IDR & 0x200, GPIOC->BSRR & 0x400, sum);
+          }
+          break;
+        }
     }
 }
 

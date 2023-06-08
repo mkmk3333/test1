@@ -1,20 +1,20 @@
 /* USER CODE BEGIN Header */
 /**
- ******************************************************************************
- * @file           : main.c
- * @brief          : Main program body
- ******************************************************************************
- * @attention
- *
- * Copyright (c) 2023 STMicroelectronics.
- * All rights reserved.
- *
- * This software is licensed under terms that can be found in the LICENSE file
- * in the root directory of this software component.
- * If no LICENSE file comes with this software, it is provided AS-IS.
- *
- ******************************************************************************
- */
+  ******************************************************************************
+  * @file           : main.c
+  * @brief          : Main program body
+  ******************************************************************************
+  * @attention
+  *
+  * Copyright (c) 2023 STMicroelectronics.
+  * All rights reserved.
+  *
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
+  *
+  ******************************************************************************
+  */
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
@@ -44,9 +44,11 @@ UART_HandleTypeDef huart1;
 TIM_HandleTypeDef htim6;
 
 /* USER CODE BEGIN PV */
-int send;
-int data;
-
+int i_flash;
+int Flash_Flag = 0;
+int a = 0;
+int sum = 0;
+int i = 0;
 uint16_t pin[8]={GPIO_PIN_0,GPIO_PIN_1,GPIO_PIN_2,GPIO_PIN_3,GPIO_PIN_4,GPIO_PIN_5,GPIO_PIN_6,GPIO_PIN_7};
 /* USER CODE END PV */
 
@@ -55,7 +57,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_TIM6_Init(void);
-void setData(int a);
 /* USER CODE BEGIN PFP */
 
 /* USER CODE END PFP */
@@ -64,23 +65,22 @@ void setData(int a);
 /* USER CODE BEGIN 0 */
 /*to redirect printf to uart with semihosting.*/
 
-int _write(int fd, char *ptr, int len)
-{
-  HAL_UART_Transmit(&huart1, (uint8_t *)ptr, len, HAL_MAX_DELAY);
-  return len;
+int _write(int fd, char* ptr, int len) {
+    HAL_UART_Transmit(&huart1, (uint8_t *) ptr, len, HAL_MAX_DELAY);
+    return len;
 }
 
 /* USER CODE END 0 */
 
 /**
- * @brief  The application entry point.
- * @retval int
- */
+  * @brief  The application entry point.
+  * @retval int
+  */
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-  int i = 0;
-  int sum = 0;
+  
+  
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -103,13 +103,13 @@ int main(void)
   MX_GPIO_Init();
   MX_USART1_UART_Init();
   MX_TIM6_Init();
-/* USER CODE BEGIN 2 */
-#if START_TIM6
-  if (HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
+  /* USER CODE BEGIN 2 */
+  # if START_TIM6
+  if(HAL_TIM_Base_Start_IT(&htim6) != HAL_OK)
   {
     Error_Handler();
   }
-#endif
+  #endif
 
   /* USER CODE END 2 */
 
@@ -117,61 +117,193 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-    
-    if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_8) == GPIO_PIN_SET)//Ready
-    {
-      if (HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_1)==GPIO_PIN_SET)
+    //printf("ACK: %d\n", HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10) == GPIO_PIN_SET);
+    if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_9) == GPIO_PIN_SET)
       {
-        GPIOC->BSRR = (data & 0x00ff) | ( (~data & 0x00ff)<<16 );
-        data=(data+1)%256;
-        if(data==255){
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_RESET);
+
+        a = 0;
+        a = GPIOC->IDR&0x00FF; 
+        if(a == 255)
           sum+=1;
-        }
-        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_SET);//send
-      }
-      if(HAL_GPIO_ReadPin(GPIOC,GPIO_PIN_8)==GPIO_PIN_RESET)
-      while(1){
-        if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_8)==GPIO_PIN_SET || HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_1)==GPIO_PIN_RESET)//ack
-        {
-          //GPIOC->BSRR = (0x0200<<16) | 0x0;
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
-          // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
-          HAL_GPIO_WritePin(GPIOC, GPIO_PIN_9, GPIO_PIN_RESET);
-          break;
-        }
-      }
-      
-    }
-    
-    if(HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_2)==GPIO_PIN_SET)
-    {
-      
-      GPIOC->BSRR = (data & 0x00ff) | ( (~data & 0x00ff)<<16 );
-      data=(data+1)%256;
-      if(data==255){
-        sum+=1;
-      }
-      HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,GPIO_PIN_SET);
-      HAL_GPIO_WritePin(GPIOC,GPIO_PIN_11,GPIO_PIN_RESET);
-    }
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_SET);
+        //HAL_Delay(1);
+        
+        HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
 
-    if(HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_1)==GPIO_PIN_RESET && HAL_GPIO_ReadPin(GPIOF,GPIO_PIN_2)==GPIO_PIN_RESET){
-      sum=0;
-      data=0;
-    }
 
-    if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_0) == GPIO_PIN_SET && data==255 && sum%1000==0){
-      printf("Send Break!\n");
-      printf("Working:%d: %ld sum: %d data:%d ready: %ld send: %ld ack: %ld\n", i++, HAL_GetTick(),sum,data,GPIOC->IDR & 0x100,GPIOC->ODR & 0x200,GPIOC->IDR & 0x400);
-    }
-      
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_0, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_2, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_3, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_4, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_5, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_6, GPIO_PIN_RESET);
+        // HAL_GPIO_WritePin(GPIOC, GPIO_PIN_7, GPIO_PIN_RESET);
+        //if(HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_10) == GPIO_PIN_SET)
+        
+      }
+      // if(sum%10 == 0)     //led
+      // {
+      //   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_SET);
+      //   HAL_Delay(5);
+      //   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_0, GPIO_PIN_RESET);
+      // }
+        
+
     
+    // while (i_flash > 0)
+    // {
+    //   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_SET); 
+    //   HAL_Delay(100);                      
+    //   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_7, GPIO_PIN_RESET);
+    //   HAL_Delay(100);
+    //   i_flash --;
+    // }
+    // switch(Flash_Flag)
+    // {
+    //   case 0:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_SET);
+    //     break;
+    //   }
+    //   case 1:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_RESET);
+    //     break;
+    //   }
+    //   case 2:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_SET);
+    //     break;
+    //   }
+    //   case 3:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_RESET);
+    //     break;
+    //   }
+    //   case 4:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_SET);
+    //     break;
+    //   }
+    //   case 5:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_RESET);
+    //     break;
+    //   }
+    //   case 6:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_SET);
+    //     break;
+    //   }
+    //   case 7:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_RESET);
+    //     break;
+    //   }
+    //   case 8:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_SET);
+    //     break;
+    //   }
+    //   case 9:
+    //   {
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_6,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_7,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_8,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_9,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_10,GPIO_PIN_RESET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_11,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_12,GPIO_PIN_SET);
+    //     HAL_GPIO_WritePin(GPIOF,GPIO_PIN_13,GPIO_PIN_RESET);
+    //     break;
+    //   }
+    //}
+
+    // if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_0) == GPIO_PIN_RESET)   /* sw1 */
+    //   HAL_GPIO_WritePin(GPIOF,GPIO_PIN_0, GPIO_PIN_RESET);
+    // else
+    //   HAL_GPIO_WritePin(GPIOF,GPIO_PIN_0, GPIO_PIN_SET);
+
+    // if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1) == GPIO_PIN_SET)  /* sw2 */
+    //   HAL_GPIO_TogglePin(GPIOF, GPIO_PIN_1);
+
+    // HAL_Delay(500);
+
+     if (HAL_GPIO_ReadPin(GPIOF, GPIO_PIN_0) == GPIO_PIN_SET && a==255 && sum%1000==0)
+        printf("Working:%d: %ld ready: %ld send: %ld ACK: %ld\n sum: %d", i++, HAL_GetTick(), GPIOC->BSRR & 0x100, GPIOC->IDR & 0x200, GPIOC->BSRR & 0x400, sum);
+    //   printf("Working:%d: %ld\n", i++, HAL_GetTick());
+
+    // if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_2) == GPIO_PIN_RESET)   /*sw3 */
+    //   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_SET);
+    // else
+    //   HAL_GPIO_WritePin(GPIOF, GPIO_PIN_2, GPIO_PIN_RESET);
+
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -180,22 +312,22 @@ int main(void)
 }
 
 /**
- * @brief System Clock Configuration
- * @retval None
- */
+  * @brief System Clock Configuration
+  * @retval None
+  */
 void SystemClock_Config(void)
 {
   RCC_OscInitTypeDef RCC_OscInitStruct = {0};
   RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
   /** Configure the main internal regulator output voltage
-   */
+  */
   __HAL_RCC_PWR_CLK_ENABLE();
   __HAL_PWR_VOLTAGESCALING_CONFIG(PWR_REGULATOR_VOLTAGE_SCALE1);
 
   /** Initializes the RCC Oscillators according to the specified parameters
-   * in the RCC_OscInitTypeDef structure.
-   */
+  * in the RCC_OscInitTypeDef structure.
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
@@ -210,8 +342,9 @@ void SystemClock_Config(void)
   }
 
   /** Initializes the CPU, AHB and APB buses clocks
-   */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV4;
@@ -224,10 +357,10 @@ void SystemClock_Config(void)
 }
 
 /**
- * @brief TIM6 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief TIM6 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_TIM6_Init(void)
 {
 
@@ -258,13 +391,14 @@ static void MX_TIM6_Init(void)
   /* USER CODE BEGIN TIM6_Init 2 */
 
   /* USER CODE END TIM6_Init 2 */
+
 }
 
 /**
- * @brief USART1 Initialization Function
- * @param None
- * @retval None
- */
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_USART1_UART_Init(void)
 {
 
@@ -290,78 +424,93 @@ static void MX_USART1_UART_Init(void)
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
+
 }
 
 /**
- * @brief GPIO Initialization Function
- * @param None
- * @retval None
- */
+  * @brief GPIO Initialization Function
+  * @param None
+  * @retval None
+  */
 static void MX_GPIO_Init(void)
 {
-  GPIO_InitTypeDef GPIO_Initure;
+   GPIO_InitTypeDef GPIO_Initure;
 
   /* GPIO Ports Clock Enable */
   __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
-  __HAL_RCC_GPIOF_CLK_ENABLE();
-  __HAL_RCC_GPIOC_CLK_ENABLE();
+  __HAL_RCC_GPIOF_CLK_ENABLE(); 
+  __HAL_RCC_GPIOC_CLK_ENABLE(); 
 
-
+  /*Configure GPIO pins : PF0 PF1 */
+  // GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1; //| GPIO_PIN_6 | GPIO_PIN_7 | GPIO_PIN_8 | GPIO_PIN_9 | GPIO_PIN_10 | GPIO_PIN_11 | GPIO_PIN_12 | GPIO_PIN_13;/*| GPIO_PIN_2*///  /* led1/2/7/3*/
+  // GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
+  // GPIO_Initure.Pull = GPIO_NOPULL;
+  // GPIO_Initure.Speed = GPIO_SPEED_FREQ_LOW;
+  // HAL_GPIO_Init(GPIOF, &GPIO_Initure);
 
   /*Configure GPIO pins : PC0 PC1 */
-  GPIO_Initure.Pin = GPIO_PIN_8; /* Ready */
+  GPIO_Initure.Pin = GPIO_PIN_8;                  //ready
+  GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_Initure.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_8, GPIO_PIN_SET);
+
+  GPIO_Initure.Pin = GPIO_PIN_9;                  //send
   GPIO_Initure.Mode = GPIO_MODE_INPUT;
   GPIO_Initure.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_Initure);
 
-  GPIO_Initure.Pin = GPIO_PIN_9; /* Send */
+
+  GPIO_Initure.Pin = GPIO_PIN_10;                  //ACK
   GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_Initure.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+  HAL_GPIO_WritePin(GPIOC, GPIO_PIN_10, GPIO_PIN_RESET);
 
-  GPIO_Initure.Pin = GPIO_PIN_10; /* Ack */
+  GPIO_Initure.Pin = GPIO_PIN_11;
+  GPIO_Initure.Mode = GPIO_MODE_IT_RISING;
+  GPIO_Initure.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+
+  GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7;
   GPIO_Initure.Mode = GPIO_MODE_INPUT;
   GPIO_Initure.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOC, &GPIO_Initure);
 
-  GPIO_Initure.Pin = GPIO_PIN_11; /* break */
-  GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_Initure.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_Initure);
-
-  GPIO_Initure.Pin = GPIO_PIN_0 | GPIO_PIN_1 | GPIO_PIN_2 | GPIO_PIN_3 | GPIO_PIN_4 | GPIO_PIN_5 | GPIO_PIN_6 | GPIO_PIN_7; /* ACK */
-  GPIO_Initure.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_Initure.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOC, &GPIO_Initure);
-
-  GPIO_Initure.Pin = GPIO_PIN_1 | GPIO_PIN_2; /* sw1,sw2 */
+/*Configure GPIO pins : PF0 PF1 */
+  GPIO_Initure.Pin = GPIO_PIN_0;                   //sw1
   GPIO_Initure.Mode = GPIO_MODE_INPUT;
   GPIO_Initure.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOF, &GPIO_Initure);
 
-  GPIO_Initure.Pin = GPIO_PIN_0; /* time */
-  GPIO_Initure.Mode = GPIO_MODE_INPUT;
-  GPIO_Initure.Pull = GPIO_NOPULL;
-  HAL_GPIO_Init(GPIOF, &GPIO_Initure);
+  // GPIO_Initure.Pin = GPIO_PIN_1;                   //sw2
+  // GPIO_Initure.Mode = GPIO_MODE_INPUT;
+  // GPIO_Initure.Pull = GPIO_NOPULL;
+  // HAL_GPIO_Init(GPIOF, &GPIO_Initure);
+
+  // /*Configure GPIO pin : PC8 */
+  // GPIO_Initure.Pin = GPIO_PIN_8 | GPIO_PIN_11;   /* key1_n */
+  // GPIO_Initure.Mode = GPIO_MODE_IT_RISING;
+  // GPIO_Initure.Pull = GPIO_NOPULL;
+  // HAL_GPIO_Init(GPIOC, &GPIO_Initure);
+
+  HAL_NVIC_SetPriority(EXTI9_5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(EXTI9_5_IRQn);
+
+  HAL_NVIC_SetPriority(EXTI15_10_IRQn, 4, 0);
+  HAL_NVIC_EnableIRQ(EXTI15_10_IRQn);
+
 }
 
 /* USER CODE BEGIN 4 */
-//int[] transfer(char c)
-
-void setData(int a){
-  for(int i=0;i<=7;i++){
-    HAL_GPIO_WritePin(GPIOC,pin[i],a%2==1?GPIO_PIN_SET:GPIO_PIN_RESET);
-    a/=2;
-  }
-}
 
 /* USER CODE END 4 */
 
 /**
- * @brief  This function is executed in case of error occurrence.
- * @retval None
- */
+  * @brief  This function is executed in case of error occurrence.
+  * @retval None
+  */
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
@@ -373,14 +522,14 @@ void Error_Handler(void)
   /* USER CODE END Error_Handler_Debug */
 }
 
-#ifdef USE_FULL_ASSERT
+#ifdef  USE_FULL_ASSERT
 /**
- * @brief  Reports the name of the source file and the source line number
- *         where the assert_param error has occurred.
- * @param  file: pointer to the source file name
- * @param  line: assert_param error line source number
- * @retval None
- */
+  * @brief  Reports the name of the source file and the source line number
+  *         where the assert_param error has occurred.
+  * @param  file: pointer to the source file name
+  * @param  line: assert_param error line source number
+  * @retval None
+  */
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* USER CODE BEGIN 6 */
